@@ -186,7 +186,7 @@ typedef struct tN_ITER {
     N_EXPR * lb;     		  	/* lower bound */
     N_EXPR * ub;     		  	/* upper bound */
     N_EXPR * step;     		  	/* step */
-    struct N_ITER * next;   /* list */
+    struct tN_ITER * next;   /* list */
 } N_ITER;
  
     /* List of statements
