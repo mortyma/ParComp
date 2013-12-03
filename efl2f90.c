@@ -308,14 +308,11 @@ void v_gen_stmts(N_STMTLIST * stmts, N_ITER_LIST* iters) {
 
 
 void vectorize_for(N_FOR* s, int nr) {
-	printf("%03d ",nr);
-    indent(idepth);
     N_ITER it = {s->loopvar, s->lb, s->ub, s->step};
     N_ITER_LIST its = {&it, &it};
     v_gen_stmts(s->body, &its);
 
-    
-//	printf("a(1:100) = 0\n");
+
 }
 
 void gen_stmts(N_STMTLIST * stmts) {
