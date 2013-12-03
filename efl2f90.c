@@ -8,6 +8,8 @@
 
 #include "efl_ir.h"
 
+
+
 int idepth  = 0;
 
 void indent(int d) {
@@ -162,6 +164,13 @@ void gen_for(N_FOR * s, int nr) {
     indent(--idepth);
     printf("    end do\n");
     }
+    
+//a(1:100) = 0
+void vectorize_for(N_FOR* s, int nr) {
+	printf("%03d ",nr);
+    indent(idepth);
+	printf("a(1:100) = 0\n");
+}
 
 void gen_stmts(N_STMTLIST * stmts) {
     N_STMT * s;
@@ -174,7 +183,8 @@ void gen_stmts(N_STMTLIST * stmts) {
                 gen_if(s->me.s_if,s->nr);
             break;
             case _FOR:      
-                gen_for(s->me.s_for,s->nr);
+                //gen_for(s->me.s_for,s->nr);
+                vectorize_for(s->me.s_for,s->nr);
             break;
             }
         }
