@@ -149,7 +149,7 @@ void gen_if(N_IF * s, int nr) {
     printf("\n");
     }
 
-void vectorize_for(N_FOR* s, int nr);
+void v_start_gen_for(N_FOR* s, int nr);
 
 void gen_for(N_FOR * s, int nr) {
 	
@@ -157,7 +157,7 @@ void gen_for(N_FOR * s, int nr) {
      vectorize_for(s, int nr)
      else generate loop
      */
-    vectorize_for(s, nr);
+    v_start_gen_for(s, nr);
     
      
     printf("%03d ",nr);
@@ -285,6 +285,21 @@ void v_gen_assign(N_ASSIGN * s, int nr, N_ITER_LIST* iters) {
 
 }
 
+void v_gen_stmts(N_STMTLIST * stmts, N_ITER_LIST* iters);
+
+void v_start_gen_for(N_FOR* s, int nr) {
+    N_ITER it = {s->loopvar, s->lb, s->ub, s->step};
+    N_ITER_LIST its = {&it, &it};
+    v_gen_stmts(s->body, &its);
+}
+
+void v_gen_for(N_FOR* s, int nr, N_ITER_LIST* iters) {
+	N_ITER it = {s->loopvar, s->lb, s->ub, s->step};
+	iters->last->next = &it;
+	iters->last = iters->last->next;
+	v_gen_stmts(s->body, iters);
+}
+
 void v_gen_stmts(N_STMTLIST * stmts, N_ITER_LIST* iters) {
 	N_STMT * s;
     for (s = stmts->first; s != NULL; s = s->next) {
@@ -298,22 +313,11 @@ void v_gen_stmts(N_STMTLIST * stmts, N_ITER_LIST* iters) {
                 gen_if(s->me.s_if,s->nr);
             break;
             case _FOR:      
-            	//TODO
-            	assert(0);
-                gen_for(s->me.s_for,s->nr);
+                v_gen_for(s->me.s_for,s->nr, iters);
             break;
             }
         }
     }
-
-
-void vectorize_for(N_FOR* s, int nr) {
-    N_ITER it = {s->loopvar, s->lb, s->ub, s->step};
-    N_ITER_LIST its = {&it, &it};
-    v_gen_stmts(s->body, &its);
-
-
-}
 
 void gen_stmts(N_STMTLIST * stmts) {
     N_STMT * s;
