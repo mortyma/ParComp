@@ -3,5 +3,5 @@
 
 bison -d efl.y
 flex efl.l
-gcc -o efl2f90 efl.tab.c lex.yy.c efl2f90.c -lfl
+clang -std=c90 -g -o efl2f90 efl.tab.c lex.yy.c efl2f90.c -lfl
 
