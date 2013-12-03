@@ -158,7 +158,7 @@ void gen_for(N_FOR * s, int nr) {
      else generate loop
      */
     v_start_gen_for(s, nr);
-    
+    return;
      
     printf("%03d ",nr);
     indent(idepth);
