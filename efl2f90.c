@@ -2,6 +2,8 @@
    EFL to Fortran 90
 */
 
+
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -147,9 +149,20 @@ void gen_if(N_IF * s, int nr) {
     printf("\n");
     }
 
+void vectorize_for(N_FOR* s, int nr);
+
 void gen_for(N_FOR * s, int nr) {
-	printf("%03d ",nr);
+	
+     /*TODO: if scc is acyclic
+     vectorize_for(s, int nr)
+     else generate loop
+     */
+    vectorize_for(s, nr);
+    
+     
+    printf("%03d ",nr);
     indent(idepth);
+    
     printf("do %s = ",s->loopvar->id);
     gen_expr(s->lb);
     printf(", ");
@@ -165,11 +178,142 @@ void gen_for(N_FOR * s, int nr) {
     printf("    end do\n");
     }
     
-//a(1:100) = 0
+    
+/* Iteration variable
+*/
+typedef struct tN_ITER {
+    ENTRY  * loopvar;         	/* loop variable */
+    N_EXPR * lb;     		  	/* lower bound */
+    N_EXPR * ub;     		  	/* upper bound */
+    N_EXPR * step;     		  	/* step */
+    struct N_ITER * next;   /* list */
+} N_ITER;
+ 
+    /* List of statements
+*/
+typedef struct tN_ITER_LIST {
+    N_ITER * first;
+    N_ITER * last;
+} N_ITER_LIST;
+
+void v_gen_var_ref(N_VAR * v, N_ITER_LIST* iters);
+
+void v_gen_expr(N_EXPR * ex, N_ITER_LIST* iters) {
+    switch(ex->typ) {
+        case _FLOATNUM:
+            printf("%f",ex->me.float_number);
+        break;
+        case _INTNUM:
+            printf("%d",ex->me.int_number);
+        break;
+        case _VAR:
+            v_gen_var_ref(ex->me.var_ref, iters);
+        break;
+        case _OP:
+        	assert(0);
+            if (ex->me.op.oper == NO_OP) {
+                printf("(");
+                gen_expr(ex->me.op.op1expr);
+                printf(")");
+                }
+            else if (ex->me.op.op2expr == NULL) {
+                gen_oper(ex->me.op.oper);
+                gen_expr(ex->me.op.op1expr);
+                }
+            else {
+                gen_expr(ex->me.op.op1expr);
+                gen_oper(ex->me.op.oper);
+                gen_expr(ex->me.op.op2expr);
+                }
+        }
+    }
+
+
+void v_gen_exprlist(N_EXPRLIST * exl, N_ITER_LIST* iters) {
+    N_EXPR * ex;
+    for (ex = exl->first; ex != NULL; ex = ex->next) {
+        if (ex != exl->first) printf(",");
+        v_gen_expr(ex, iters);
+        }
+    }
+
+
+
+void v_gen_var_ref(N_VAR * v, N_ITER_LIST* iters) {
+    ENTRY * e;
+    e = v->entry;
+    
+    //TODO: need to do this somewhere else, since var may not be part of a vectorized statement
+    N_ITER* it;
+    for (it = iters->first; it != NULL; it = it->next) {
+    	if(it->loopvar->id == e->id) {
+    		printf("1:100");
+    		return;
+    	}
+    }
+    
+    printf("%s",e->id);
+    
+    if (e->dim_type == _SCAL) {
+        if (v->index != NULL) 
+            printf("{no index expression allowed}\n");
+        }
+    if (e->dim_type == _ARR) {
+        if (v->index == NULL) 
+            printf("{index expression missing}\n");
+        printf("(");
+        v_gen_exprlist(v->index, iters);
+        printf(")");
+        }
+    }
+
+void v_gen_assign(N_ASSIGN * s, int nr, N_ITER_LIST* iters) {
+	printf("%03d ",nr);
+    indent(idepth);
+    if (s->var_ref != NULL) {
+    	v_gen_var_ref(s->var_ref, iters);
+    	printf(" = ");
+		}
+	else {
+    	printf("write(*,*) ");
+		}
+    gen_expr(s->expr);
+    printf("\n");
+
+
+}
+
+void v_gen_stmts(N_STMTLIST * stmts, N_ITER_LIST* iters) {
+	N_STMT * s;
+    for (s = stmts->first; s != NULL; s = s->next) {
+        switch(s->typ) {
+            case _ASSIGN:   
+                v_gen_assign(s->me.s_assign,s->nr, iters);
+            break;
+            case _IF:       
+	            //TODO
+            	assert(0);
+                gen_if(s->me.s_if,s->nr);
+            break;
+            case _FOR:      
+            	//TODO
+            	assert(0);
+                gen_for(s->me.s_for,s->nr);
+            break;
+            }
+        }
+    }
+
+
 void vectorize_for(N_FOR* s, int nr) {
 	printf("%03d ",nr);
     indent(idepth);
-	printf("a(1:100) = 0\n");
+    N_ITER it = {s->loopvar, s->lb, s->ub, s->step};
+    N_ITER_LIST its = {&it, &it};
+    v_gen_stmts(s->body, &its);
+
+    
+//	printf("a(1:100) = 0\n");
 }
 
 void gen_stmts(N_STMTLIST * stmts) {
@@ -183,8 +327,8 @@ void gen_stmts(N_STMTLIST * stmts) {
                 gen_if(s->me.s_if,s->nr);
             break;
             case _FOR:      
-                //gen_for(s->me.s_for,s->nr);
-                vectorize_for(s->me.s_for,s->nr);
+                gen_for(s->me.s_for,s->nr);
+                //vectorize_for(s->me.s_for,s->nr);
             break;
             }
         }
