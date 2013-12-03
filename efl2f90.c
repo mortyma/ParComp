@@ -247,7 +247,9 @@ void v_gen_var_ref(N_VAR * v, N_ITER_LIST* iters) {
     N_ITER* it;
     for (it = iters->first; it != NULL; it = it->next) {
     	if(it->loopvar->id == e->id) {
-    		printf("1:100");
+    		v_gen_expr(it->lb, iters);
+    		printf(":");
+    		v_gen_expr(it->ub, iters);
     		return;
     	}
     }
@@ -277,7 +279,7 @@ void v_gen_assign(N_ASSIGN * s, int nr, N_ITER_LIST* iters) {
 	else {
     	printf("write(*,*) ");
 		}
-    gen_expr(s->expr);
+    v_gen_expr(s->expr, iters);
     printf("\n");
 
 
