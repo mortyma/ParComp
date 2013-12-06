@@ -1,5 +1,9 @@
+#include "scc.h"
+<<<<<<< HEAD
+
 #include <stdbool.h>
-#include "scc_structures.h"
+=======
+>>>>>>> 2d62b25... REBASEME
 #include "graphstreamer.h"
 #include <assert.h>
 
@@ -66,6 +70,12 @@ void scc(size_t ct) {
     	}
 }
 
+vector_list **get_scc(char *file) {
+	read_from(file);
+	SCC();
+	return components;
+}
+
 /*int main(void) {
 	read_from("../scc.in");
 	SCC();
@@ -79,6 +89,5 @@ void scc(size_t ct) {
         	printf("\n");
 		components_tmp = components_tmp->next;
     	}
-
         return 0;
 }*/

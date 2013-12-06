@@ -1,33 +1,10 @@
 #ifndef SCC_H
 #define SCC_H
 
-#include "graph.h"
-#include <stack>
+#include "scc_structures.h"
 
-class SCC {
-public:
-    typedef std::vector<size_t> Component;
-    typedef std::vector<Component*> Components;
+typedef vector_list** t_scc;
 
-    SCC(Graph* graph);
-    ~SCC();
-
-    Components get();
-
-private:
-    void scc(size_t node);
-
-private:
-    bool* visited;
-    bool* on_stack;
-    size_t* idx;
-    size_t* low_link;
-    std::stack<size_t> stack;
-    Components components;
-    Graph* g;
-    size_t cnt = 0;
-
-
-};
+t_scc get_scc(char *file);
 
 #endif /* SCC_H */

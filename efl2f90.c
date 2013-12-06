@@ -157,7 +157,7 @@ void gen_for(N_FOR * s, int nr) {
      vectorize_for(s, int nr)
      else generate loop
      */
-	vector_list * scc = get_SCCs("scc.in");
+	t_scc scc = get_scc("scc/scc.in");
     v_start_gen_for(s, nr);
     return;
      
