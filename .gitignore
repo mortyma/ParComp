@@ -1,0 +1,7 @@
+efl.tab.*
+lex.yy.c
+scc/build/
+efl2f90
+CMakeLists.txt.user 
+jacobi.f90
+build/
