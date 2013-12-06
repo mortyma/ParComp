@@ -1,1 +1,1 @@
-./efl2f90 < $1.efl > $1.f90
+./build/efl2f90 < $1.efl > $1.f90

@@ -7,7 +7,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
+#include "scc/scc.h"
 #include "efl_ir.h"
 
 
@@ -157,6 +157,7 @@ void gen_for(N_FOR * s, int nr) {
      vectorize_for(s, int nr)
      else generate loop
      */
+	vector_list * scc = get_SCCs("scc.in");
     v_start_gen_for(s, nr);
     return;
      

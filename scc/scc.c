@@ -66,7 +66,7 @@ void scc(size_t ct) {
     	}
 }
 
-int main(void) {
+/*int main(void) {
 	read_from("../scc.in");
 	SCC();
 	vector_node *components_tmp = components->head;
@@ -81,4 +81,4 @@ int main(void) {
     	}
 
         return 0;
-}
+}*/
