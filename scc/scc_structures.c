@@ -2,7 +2,7 @@
 #include <assert.h>
 #include "scc_structures.h"
 
-list **m_nodes;
+list ***m_nodes;
 
 size_t top(list *stack) {
 	if(stack->head == NULL) {
@@ -68,20 +68,25 @@ void push_back_v(vector_list *components, list *component) {
 	}
 }
 
-list** nodes() {
-	return m_nodes;
+list** nodes(size_t level) {
+	return m_nodes[level];
 }
 
-void add_arc(size_t from, size_t to) {
+void add_arc(size_t from, size_t to, size_t level) {
 	assert(from < m_nr_nodes);
     	assert(to < m_nr_nodes);
-    	push_back(m_nodes[from], to);
+	for(size_t i = 1; i <= level; i++) {
+    		push_back(m_nodes[i][from], to);
+	}
 }
 
-node* neighbours(size_t ct) {
+node* neighbours(size_t ct, size_t level) {
 	assert(ct < m_nr_nodes);
-    	return (m_nodes[ct])->head;
+    	return (m_nodes[level][ct])->head;
 }
 size_t size() {
     return m_nr_nodes;
+}
+size_t levels() {
+    return m_nr_levels;
 }

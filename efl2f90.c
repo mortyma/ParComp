@@ -13,6 +13,9 @@
 
 
 int idepth  = 0;
+//increased by 1 for every assignment statement actually processed
+size_t stmt_cnt = 0;
+size_t lvl = 0;
 
 void indent(int d) {
     int i;
@@ -120,6 +123,7 @@ void gen_assign(N_ASSIGN * s, int nr) {
     if (s->var_ref != NULL) {
     	gen_var_ref(s->var_ref);
     	printf(" = ");
+		++stmt_cnt;
 		}
 	else {
     	printf("write(*,*) ");
@@ -276,6 +280,7 @@ void v_gen_assign(N_ASSIGN * s, int nr, N_ITER_LIST* iters) {
     if (s->var_ref != NULL) {
     	v_gen_var_ref(s->var_ref, iters);
     	printf(" = ");
+		++stmt_cnt;
 		}
 	else {
     	printf("write(*,*) ");

@@ -1,6 +1,6 @@
 bake:
 	mkdir -p build
-	cd build; cmake -DCMAKE_BUILD_TYPE="Debug" ../; make -j6
+	#cd build; cmake -DCMAKE_BUILD_TYPE="Debug" ../; make -j6
 	bison -d efl.y
 	flex efl.l
 	clang -std=c90 -g  scc/scc.c scc/scc_structures.c scc/graphstreamer.c  efl.tab.c lex.yy.c efl2f90.c -lfl -o efl2f90
