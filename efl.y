@@ -412,7 +412,7 @@ int main(int argc, char **argv) {
 
     prog = new(N_PROG);
     prog->symbols = (ENTRY **) malloc(2*sizeof(ENTRY));
-	stmt_count = 100;
+	stmt_count = 0;
 	loop_count = 0;
     if (yyparse()==0) {
         count_stmts(prog->stmts);
