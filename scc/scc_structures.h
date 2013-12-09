@@ -44,6 +44,5 @@ size_t levels();
 list ***m_nodes;
 size_t m_nr_nodes;
 size_t m_nr_levels;
-vector_list **components;
 
 #endif /* SCC_STRUCTURES_H */

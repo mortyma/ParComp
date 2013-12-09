@@ -23,8 +23,6 @@ void indent(int d) {
     }
 
 void gen_decls(ENTRY ** sym) {
-	get_scc("");
-
     ENTRY * e;
     int i;
     for (e = sym[FIRST]; e != NULL; e = e->next) {
