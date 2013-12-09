@@ -407,6 +407,8 @@ void count_stmts(N_STMTLIST * stmts) {
             }
         }
     }
+    
+
         
 int main(int argc, char **argv) {
 
@@ -422,6 +424,7 @@ int main(int argc, char **argv) {
         printf("\n");
         printf("program %s\n",prog->name);
         printf("\n");
+       
         gen_decls(prog->symbols);
         printf("\n");
         gen_stmts(prog->stmts);

@@ -84,10 +84,44 @@ void scc(size_t lv, size_t ct) {
 		}
 }
 
-vector_list **get_scc(char *file) {
-	read_from(file);
+int get_scc(char *file) {
+	printf("foobar\n");
+	read_from("scc/scc.in");
 	SCC();
-	return components;
+	return 1; //components;
+}
+
+void print_scc() {
+	size_t nr_levels = levels();
+		for(size_t i = 0; i < nr_levels; i++) {
+			printf("Level: %zu\n", i);
+			vector_node *components_tmp = components[i]->head;
+				while(components_tmp != NULL) {
+				node *component_tmp = components_tmp->list->head;
+					while(component_tmp != NULL) {
+							printf("cyclic: %s %zu\n", btoa(components_tmp->is_cyclic), component_tmp->node_ct+1);
+					component_tmp = component_tmp->next;
+					}
+					printf("\n");
+				components_tmp = components_tmp->next;
+				}
+		}
+}
+
+bool is_cyclic(size_t lvl, size_t stmt_nr) {
+	vector_node *components_tmp = components[lvl]->head;
+	while(components_tmp != NULL) {
+		node *component_tmp = components_tmp->list->head;
+		while(component_tmp != NULL) {
+			if(component_tmp->node_ct == stmt_nr) {
+				return components_tmp->is_cyclic;
+			}
+			component_tmp = component_tmp->next;
+		}
+		components_tmp = components_tmp->next;
+	}
+	assert(0);
+	return false;
 }
 
 

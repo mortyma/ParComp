@@ -3,9 +3,10 @@
 
 #include "scc_structures.h"
 
-typedef vector_list** t_scc;
+int get_scc(char *file);
 
-t_scc get_scc(char *file);
+void print_scc();
 
+bool is_cyclic(size_t lvl, size_t stmt_nr);
 
 #endif /* SCC_H */

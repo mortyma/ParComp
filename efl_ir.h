@@ -2,6 +2,8 @@
    EFL Intermediate Representation
 */
 
+#include "scc/scc.h"
+
 #define MAXRANK 8
 
 #define FIRST 0
@@ -56,7 +58,7 @@ typedef struct tN_EXPR {
         struct {
             enum { NO_OP=0, EQ_OP, NE_OP, GT_OP, GE_OP, LT_OP, LE_OP,
                    PLUS_OP, MINUS_OP, MULT_OP, DIV_OP,
-                   AND_OP, OR_OP, NOT_OP } oper; /* operator */
+				   AND_OP, OR_OP, NOT_OP } oper; /* operator */
             struct tN_EXPR * op1expr; /* 1st operand */
             struct tN_EXPR * op2expr; /* 2st operand */
             } op;

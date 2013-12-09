@@ -1,5 +1,5 @@
 bake:
-	mkdir -p build
+	#mkdir -p build
 	#cd build; cmake -DCMAKE_BUILD_TYPE="Debug" ../; make -j6
 	bison -d efl.y
 	flex efl.l
@@ -7,10 +7,11 @@ bake:
 	
 	
 clean:
-	rm *~
-	cd build; make clean
-	rm -r build
+	
+	#cd build; make clean
+	#rm -r build
 	rm efl2f90
 	rm efl.tab.c
 	rm efl.tab.h
 	rm lex.yy.c
+	rm *~

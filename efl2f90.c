@@ -13,9 +13,8 @@
 
 
 int idepth  = 0;
-//increased by 1 for every assignment statement actually processed
-size_t stmt_cnt = 0;
 size_t lvl = 0;
+vector_list **scc;
 
 void indent(int d) {
     int i;
@@ -24,6 +23,8 @@ void indent(int d) {
     }
 
 void gen_decls(ENTRY ** sym) {
+	get_scc("");
+
     ENTRY * e;
     int i;
     for (e = sym[FIRST]; e != NULL; e = e->next) {
@@ -123,7 +124,6 @@ void gen_assign(N_ASSIGN * s, int nr) {
     if (s->var_ref != NULL) {
     	gen_var_ref(s->var_ref);
     	printf(" = ");
-		++stmt_cnt;
 		}
 	else {
     	printf("write(*,*) ");
@@ -155,17 +155,44 @@ void gen_if(N_IF * s, int nr) {
 
 void v_start_gen_for(N_FOR* s, int nr);
 
+
+
+
+void get_stmts(N_FOR *for_s) {
+	N_STMTLIST *stmts = for_s->body;
+	N_STMT *s;
+	for (s = stmts->first; s != NULL; s = s->next) {
+		switch(s->typ) {
+			case _ASSIGN:
+				//TODO
+				//s->nr
+			break;
+			case _IF:
+				//TODO
+				assert(0);
+			break;
+			case _FOR:
+				//TODO
+				get_stmts(s->me.s_for);
+			break;
+			}
+		}
+
+}
+
 void gen_for(N_FOR * s, int nr) {
-	
+	++lvl;
      /*TODO: if scc is acyclic
      vectorize_for(s, int nr)
      else generate loop
      */
-	t_scc scc = get_scc("scc/scc.in");
-    v_start_gen_for(s, nr);
-    return;
+
+	get_stmts(s);
+		v_start_gen_for(s, nr);
+		return;
+
      
-    printf("%03d ",nr);
+	printf("%03d ",nr);
     indent(idepth);
     
     printf("do %s = ",s->loopvar->id);
@@ -181,6 +208,7 @@ void gen_for(N_FOR * s, int nr) {
     gen_stmts(s->body);
     indent(--idepth);
     printf("    end do\n");
+	--lvl;
     }
     
     
@@ -213,7 +241,7 @@ void v_gen_expr(N_EXPR * ex, N_ITER_LIST* iters) {
         break;
         case _VAR:
             v_gen_var_ref(ex->me.var_ref, iters);
-        break;
+		break;
         case _OP:
         	assert(0);
             if (ex->me.op.oper == NO_OP) {
@@ -280,7 +308,6 @@ void v_gen_assign(N_ASSIGN * s, int nr, N_ITER_LIST* iters) {
     if (s->var_ref != NULL) {
     	v_gen_var_ref(s->var_ref, iters);
     	printf(" = ");
-		++stmt_cnt;
 		}
 	else {
     	printf("write(*,*) ");
@@ -294,35 +321,39 @@ void v_gen_assign(N_ASSIGN * s, int nr, N_ITER_LIST* iters) {
 void v_gen_stmts(N_STMTLIST * stmts, N_ITER_LIST* iters);
 
 void v_start_gen_for(N_FOR* s, int nr) {
-    N_ITER it = {s->loopvar, s->lb, s->ub, s->step};
+	++lvl;
+	N_ITER it = {s->loopvar, s->lb, s->ub, s->step};
     N_ITER_LIST its = {&it, &it};
     v_gen_stmts(s->body, &its);
+	--lvl;
 }
 
 void v_gen_for(N_FOR* s, int nr, N_ITER_LIST* iters) {
+	++lvl;
 	N_ITER it = {s->loopvar, s->lb, s->ub, s->step};
 	iters->last->next = &it;
 	iters->last = iters->last->next;
 	v_gen_stmts(s->body, iters);
+	--lvl;
 }
 
 void v_gen_stmts(N_STMTLIST * stmts, N_ITER_LIST* iters) {
 	N_STMT * s;
-    for (s = stmts->first; s != NULL; s = s->next) {
-        switch(s->typ) {
-            case _ASSIGN:   
-                v_gen_assign(s->me.s_assign,s->nr, iters);
-            break;
-            case _IF:       
-	            //TODO
-            	assert(0);
-                gen_if(s->me.s_if,s->nr);
-            break;
-            case _FOR:      
-                v_gen_for(s->me.s_for,s->nr, iters);
-            break;
-            }
-        }
+	for (s = stmts->first; s != NULL; s = s->next) {
+		switch(s->typ) {
+			case _ASSIGN:
+				v_gen_assign(s->me.s_assign,s->nr, iters);
+			break;
+			case _IF:
+				//TODO
+				assert(0);
+				gen_if(s->me.s_if,s->nr);
+			break;
+			case _FOR:
+				v_gen_for(s->me.s_for,s->nr, iters);
+			break;
+			}
+		}
     }
 
 void gen_stmts(N_STMTLIST * stmts) {
