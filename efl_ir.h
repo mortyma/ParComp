@@ -134,13 +134,6 @@ typedef struct tN_ITER {
     struct tN_ITER * prev;   /* list */
 } N_ITER;
  
-    /* List of statements
-*/
-typedef struct tN_ITER_LIST {
-    N_ITER * first;
-    N_ITER * last;
-} N_ITER_LIST;
-
 N_PROG * prog;
 int stmt_count;
 int loop_count;
