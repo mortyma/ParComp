@@ -152,7 +152,7 @@ void gen_if(N_IF * s, int nr) {
     printf("\n");
     }
 
-void v_start_gen_for(N_FOR* s, int nr);
+//void v_start_gen_for(N_FOR* s, int nr);
 
 
 
@@ -265,9 +265,9 @@ void gen_for(N_FOR * s, int nr) {
     }
     
 
-void v_gen_var_ref(N_VAR * v, N_ITER_LIST* iters);
+//void v_gen_var_ref(N_VAR * v, N_ITER_LIST* iters);
 
-void v_gen_expr(N_EXPR * ex, N_ITER_LIST* iters) {
+/*void v_gen_expr(N_EXPR * ex, N_ITER_LIST* iters) {
     switch(ex->typ) {
         case _FLOATNUM:
             printf("%f",ex->me.float_number);
@@ -295,25 +295,25 @@ void v_gen_expr(N_EXPR * ex, N_ITER_LIST* iters) {
                 gen_expr(ex->me.op.op2expr);
                 }
         }
-    }
+	}*/
 
 
-void v_gen_exprlist(N_EXPRLIST * exl, N_ITER_LIST* iters) {
+/*void v_gen_exprlist(N_EXPRLIST * exl, N_ITER_LIST* iters) {
     N_EXPR * ex;
     for (ex = exl->first; ex != NULL; ex = ex->next) {
         if (ex != exl->first) printf(",");
         v_gen_expr(ex, iters);
         }
-    }
+	}*/
 
 
 
-void v_gen_var_ref(N_VAR * v, N_ITER_LIST* iters) {
+/*void v_gen_var_ref(N_VAR * v, N_ITER_LIST* iters) {
     ENTRY * e;
     e = v->entry;
     
     //TODO: need to do this somewhere else, since var may not be part of a vectorized statement
-    /*N_ITER* it;
+	/*N_ITER* it;
     for (it = iters->first; it != NULL; it = it->next) {
     	if(it->loopvar->id == e->id) {
     		v_gen_expr(it->lb, iters);
@@ -323,7 +323,7 @@ void v_gen_var_ref(N_VAR * v, N_ITER_LIST* iters) {
     	}
     }*/
     
-    printf("%s",e->id);
+	/*printf("%s",e->id);
     
     if (e->dim_type == _SCAL) {
         if (v->index != NULL) 
@@ -336,9 +336,9 @@ void v_gen_var_ref(N_VAR * v, N_ITER_LIST* iters) {
         v_gen_exprlist(v->index, iters);
         printf(")");
         }
-    }
+	}*/
 
-void v_gen_assign(N_ASSIGN * s, int nr, N_ITER_LIST* iters) {
+/*void v_gen_assign(N_ASSIGN * s, int nr, N_ITER_LIST* iters) {
 	printf("%03d ",nr);
     indent(idepth);
     if (s->var_ref != NULL) {
@@ -349,31 +349,31 @@ void v_gen_assign(N_ASSIGN * s, int nr, N_ITER_LIST* iters) {
     	printf("write(*,*) ");
 		}
     v_gen_expr(s->expr, iters);
-    printf("\n");
+	printf("\n");
 
 
-}
+}*/
 
-void v_gen_stmts(N_STMTLIST * stmts, N_ITER_LIST* iters);
+//void v_gen_stmts(N_STMTLIST * stmts, N_ITER_LIST* iters);
 
-void v_start_gen_for(N_FOR* s, int nr) {
-	/*++lvl;
+/*void v_start_gen_for(N_FOR* s, int nr) {
+	++lvl;
 	N_ITER it = {s->loopvar, s->lb, s->ub, s->step};
     	N_ITER_LIST its = {&it, &it};
     	v_gen_stmts(s->body, &its);
-	--lvl;*/
-}
+	--lvl;
+}*/
 
-void v_gen_for(N_FOR* s, int nr, N_ITER_LIST* iters) {
-	/*++lvl;
+/*void v_gen_for(N_FOR* s, int nr, N_ITER_LIST* iters) {
+	++lvl;
 	N_ITER it = {s->loopvar, s->lb, s->ub, s->step};
 	iters->last->next = &it;
 	iters->last = iters->last->next;
 	v_gen_stmts(s->body, iters);
-	--lvl;*/
-}
+	--lvl;
+}*/
 
-void v_gen_stmts(N_STMTLIST * stmts, N_ITER_LIST* iters) {
+/*void v_gen_stmts(N_STMTLIST * stmts, N_ITER_LIST* iters) {
 	N_STMT * s;
 	for (s = stmts->first; s != NULL; s = s->next) {
 		switch(s->typ) {
@@ -391,7 +391,7 @@ void v_gen_stmts(N_STMTLIST * stmts, N_ITER_LIST* iters) {
 			}
 		}
     }
-
+*/
 void gen_stmts(N_STMTLIST * stmts) {
     N_STMT * s;
     for (s = stmts->first; s != NULL; s = s->next) {
