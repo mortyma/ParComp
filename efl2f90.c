@@ -154,9 +154,7 @@ void gen_if(N_IF * s, int nr) {
 	//printf("%03d ",nr);
     indent(idepth);
     printf("if (");
-	//TODO
-	assert(0);
-	//gen_expr(s->expr);
+	gen_expr(s->expr, NULL, 0);
     printf(") then\n");
     idepth++;
     gen_stmts(s->then_part);
@@ -419,8 +417,6 @@ void gen_stmts(N_STMTLIST * stmts) {
     for (s = stmts->first; s != NULL; s = s->next) {
         switch(s->typ) {
             case _ASSIGN:   
-				//TODO: only called for body of if statement
-
 				gen_assign(s->me.s_assign,s->nr, NULL, 0);
             break;
             case _IF:       
@@ -429,7 +425,6 @@ void gen_stmts(N_STMTLIST * stmts) {
             break;
             case _FOR:      
                 gen_for(s->me.s_for,s->nr);
-                //vectorize_for(s->me.s_for,s->nr);
             break;
             }
         }
