@@ -389,12 +389,16 @@ void count_for(N_FOR * s) {
     count_stmts(s->body);
     }
 
+
+extern N_STMT *assigments[101];
+    
 void count_stmts(N_STMTLIST * stmts) {
     N_STMT * s;
     for (s = stmts->first; s != NULL; s = s->next) {
         switch(s->typ) {
             case _ASSIGN :	
 				s->nr = ++stmt_count;
+				 assigments[stmt_count] = s;
 			break;
             case _IF:
 				s->nr = ++stmt_count;
@@ -424,7 +428,7 @@ int main(int argc, char **argv) {
         printf("\n");
         printf("program %s\n",prog->name);
         printf("\n");
-       
+        init_scc();
         gen_decls(prog->symbols);
         printf("\n");
         gen_stmts(prog->stmts);

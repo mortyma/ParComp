@@ -1,8 +1,8 @@
 /* 185.A64 Compilers for Parallel Systems WS 2013/14 H.Moritsch
    EFL Intermediate Representation
 */
-
-#include "scc/scc.h"
+#ifndef _EFL_IR
+#define _EFL_IR
 
 #define MAXRANK 8
 
@@ -58,7 +58,7 @@ typedef struct tN_EXPR {
         struct {
             enum { NO_OP=0, EQ_OP, NE_OP, GT_OP, GE_OP, LT_OP, LE_OP,
                    PLUS_OP, MINUS_OP, MULT_OP, DIV_OP,
-				   AND_OP, OR_OP, NOT_OP } oper; /* operator */
+				   AND_OP, OR_OP, NOT_OP, VECT_OP } oper; /* operator */
             struct tN_EXPR * op1expr; /* 1st operand */
             struct tN_EXPR * op2expr; /* 2st operand */
             } op;
@@ -102,7 +102,7 @@ typedef struct tN_FOR {
 */
 typedef struct tN_STMT {
     enum { _ASSIGN=0, _IF, _FOR } typ;
-    union {
+    struct _me {
         N_ASSIGN * s_assign;
         N_IF     * s_if;
         N_FOR    * s_for;
@@ -126,6 +126,22 @@ typedef struct tN_PROG {
     N_STMTLIST * stmts;         /* Executable statments */
     } N_PROG;
 
+/* Iteration variable
+*/
+typedef struct tN_ITER {
+    struct tN_FOR *tn_for;
+    int lvl;
+    struct tN_ITER * prev;   /* list */
+} N_ITER;
+ 
+    /* List of statements
+*/
+typedef struct tN_ITER_LIST {
+    N_ITER * first;
+    N_ITER * last;
+} N_ITER_LIST;
+
 N_PROG * prog;
 int stmt_count;
 int loop_count;
+#endif

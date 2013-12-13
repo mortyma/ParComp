@@ -1,6 +1,6 @@
+#include <assert.h>
 #include "graphstreamer.h"
 #include "scc_structures.h"
-#include <assert.h>
 
 void read_from(char *file) {
 
@@ -11,6 +11,8 @@ void read_from(char *file) {
 	fp = fopen(file, "r");
 
 	fscanf(fp, "%zu %zu %zu\n", &nr_nodes, &nr_edges, &nr_levels);
+	stmt_array = (node **)malloc(nr_nodes*sizeof(node *));
+
 	m_nodes = (list ***)malloc((nr_levels+1)*sizeof(list **));
 	
 	for(size_t i = 0; i < nr_levels+1; i++) {
@@ -20,7 +22,7 @@ void read_from(char *file) {
 		}
 	}
 	m_nr_nodes = nr_nodes;
-	m_nr_levels = nr_levels+1;
+	m_nr_levels = nr_levels;
 
 	while(!feof(fp)) {
 		fscanf(fp, "%zu %zu %zu %zu\n", &from, &to, &level, &type);

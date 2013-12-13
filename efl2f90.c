@@ -1,4 +1,4 @@
-/* 185.A64 Compilers for Parallel Systems WS 2013/14 H.Moritsch
+/*185.A64 Compilers for Parallel Systems WS 2013/14 H.Moritsch
    EFL to Fortran 90
 */
 
@@ -10,11 +10,10 @@
 #include "scc/scc.h"
 #include "efl_ir.h"
 
-
-
+#define MAX 100
 int idepth  = 0;
 size_t lvl = 0;
-vector_list **scc;
+N_ASSIGN *assigments[MAX+1];
 
 void indent(int d) {
     int i;
@@ -23,7 +22,7 @@ void indent(int d) {
     }
 
 void gen_decls(ENTRY ** sym) {
-    ENTRY * e;
+	ENTRY * e;
     int i;
     for (e = sym[FIRST]; e != NULL; e = e->next) {
         switch (e->data_type) {
@@ -84,6 +83,7 @@ void gen_oper(int o) {
   case AND_OP:      printf(".and."); break;
   case OR_OP:       printf(".or.");  break;
   case NOT_OP:      printf(".not."); break;
+  case VECT_OP:     printf(":"); break;
   }
 }
 
@@ -95,8 +95,9 @@ void gen_expr(N_EXPR * ex) {
         case _INTNUM:
             printf("%d",ex->me.int_number);
         break;
-        case _VAR:
+        case _VAR: 
             gen_var_ref(ex->me.var_ref);
+		
         break;
         case _OP:
             if (ex->me.op.oper == NO_OP) {
@@ -156,76 +157,113 @@ void v_start_gen_for(N_FOR* s, int nr);
 
 
 
-void get_stmts(N_FOR *for_s) {
+void get_stmts(N_FOR *for_s, N_ITER* it, list *nrs) {
 	N_STMTLIST *stmts = for_s->body;
 	N_STMT *s;
 	for (s = stmts->first; s != NULL; s = s->next) {
 		switch(s->typ) {
-			case _ASSIGN:
-				//TODO
-				//s->nr
+			case _ASSIGN: {
+				push_back_t(nrs, s->nr-1, it, s->me.s_assign);
+				}
 			break;
 			case _IF:
 				//TODO
 				assert(0);
 			break;
-			case _FOR:
+			case _FOR: {
 				//TODO
-				get_stmts(s->me.s_for);
+				N_ITER *nest_it = malloc(sizeof(N_ITER));
+				nest_it->tn_for = s->me.s_for;
+				nest_it->prev = it;
+				nest_it->lvl = ++lvl;
+				get_stmts(s->me.s_for, nest_it, nrs);
+				}
 			break;
 			}
 		}
+}
 
+void vectorcode(list *nrs, int lvl) {
+	vector_list * scc = get_SCC(nrs, lvl);
+	vector_node *tmp;
+	for(tmp = scc->tail; tmp != NULL; tmp = tmp->prev) {
+		if(tmp->is_cyclic) {
+			//printf("%03d ",nr);
+			node *tmp_node = nrs->head;
+			N_ASSIGN *assign = tmp_node->assign;
+			N_ITER * tmp_iter = tmp_node->loop;
+			while(tmp_iter != NULL) {
+				if(tmp_iter->lvl == lvl) {
+					break;
+				}
+				tmp_iter = tmp_iter->prev;
+			}
+			N_FOR *s = tmp_iter->tn_for;
+			indent(idepth);
+			//printf("do %s = ",s->loopvar->id);
+			//gen_assign(assign, tmp->list->head->node_ct);
+			/*gen_expr(s->lb);
+			printf(", ");
+			gen_expr(s->ub);
+			if (s->step!=NULL) {
+				printf(", ");
+				gen_expr(s->step);
+				}
+			printf("\n");
+			idepth++;*/
+			vectorcode(tmp->list, lvl+1);
+		}
+		else {
+			N_ASSIGN *assign = tmp->list->head->assign;
+			gen_assign(assign, tmp->list->head->node_ct);
+		}
+	}
 }
 
 void gen_for(N_FOR * s, int nr) {
-	++lvl;
-     /*TODO: if scc is acyclic
-     vectorize_for(s, int nr)
-     else generate loop
-     */
+	lvl = 1;
+	list *nrs = (list *) malloc(sizeof(list));
+	nrs->head = NULL;
+	nrs->tail = NULL;
 
-	get_stmts(s);
-		v_start_gen_for(s, nr);
-		return;
+	N_ITER *it = malloc(sizeof(N_ITER));
+	it->tn_for = s;
+	it->lvl = lvl;
+	it->prev = NULL;
 
-     
-	printf("%03d ",nr);
-    indent(idepth);
-    
-    printf("do %s = ",s->loopvar->id);
-    gen_expr(s->lb);
-    printf(", ");
-    gen_expr(s->ub);
-    if (s->step!=NULL) {
-        printf(", ");
-        gen_expr(s->step);
-        }
-    printf("\n");
-    idepth++;
-    gen_stmts(s->body);
-    indent(--idepth);
-    printf("    end do\n");
-	--lvl;
+	get_stmts(s, it, nrs);
+	update_nodes(nrs);
+	vectorcode(nrs, 1);
+
+	free(nrs);
+	free(it);
+	/*for(tmp = scc->tail; tmp != NULL; tmp = tmp->prev) {
+		if(tmp->is_cyclic) {
+			//nested, non-vectorized loops not genertated correctly
+			printf("%03d ",nr);
+			indent(idepth);
+			printf("do %s = ",s->loopvar->id);
+			gen_expr(s->lb);
+			printf(", ");
+			gen_expr(s->ub);
+			if (s->step!=NULL) {
+				printf(", ");
+				gen_expr(s->step);
+				}
+			printf("\n");
+			idepth++;
+			gen_stmts(s->body);
+			indent(--idepth);
+			printf("    end do\n");
+		} else {
+			//vectorize loop
+		}
+	}*/
+	//v_start_gen_for(s, nr);
+	//return;
+	//--lvl;
     }
     
-    
-/* Iteration variable
-*/
-typedef struct tN_ITER {
-    ENTRY  * loopvar;         	/* loop variable */
-    N_EXPR * lb;     		  	/* lower bound */
-    N_EXPR * ub;     		  	/* upper bound */
-    N_EXPR * step;     		  	/* step */
-    struct tN_ITER * next;   /* list */
-} N_ITER;
- 
-    /* List of statements
-*/
-typedef struct tN_ITER_LIST {
-    N_ITER * first;
-    N_ITER * last;
-} N_ITER_LIST;
 
 void v_gen_var_ref(N_VAR * v, N_ITER_LIST* iters);
 
@@ -275,7 +313,7 @@ void v_gen_var_ref(N_VAR * v, N_ITER_LIST* iters) {
     e = v->entry;
     
     //TODO: need to do this somewhere else, since var may not be part of a vectorized statement
-    N_ITER* it;
+    /*N_ITER* it;
     for (it = iters->first; it != NULL; it = it->next) {
     	if(it->loopvar->id == e->id) {
     		v_gen_expr(it->lb, iters);
@@ -283,7 +321,7 @@ void v_gen_var_ref(N_VAR * v, N_ITER_LIST* iters) {
     		v_gen_expr(it->ub, iters);
     		return;
     	}
-    }
+    }*/
     
     printf("%s",e->id);
     
@@ -319,20 +357,20 @@ void v_gen_assign(N_ASSIGN * s, int nr, N_ITER_LIST* iters) {
 void v_gen_stmts(N_STMTLIST * stmts, N_ITER_LIST* iters);
 
 void v_start_gen_for(N_FOR* s, int nr) {
-	++lvl;
+	/*++lvl;
 	N_ITER it = {s->loopvar, s->lb, s->ub, s->step};
-    N_ITER_LIST its = {&it, &it};
-    v_gen_stmts(s->body, &its);
-	--lvl;
+    	N_ITER_LIST its = {&it, &it};
+    	v_gen_stmts(s->body, &its);
+	--lvl;*/
 }
 
 void v_gen_for(N_FOR* s, int nr, N_ITER_LIST* iters) {
-	++lvl;
+	/*++lvl;
 	N_ITER it = {s->loopvar, s->lb, s->ub, s->step};
 	iters->last->next = &it;
 	iters->last = iters->last->next;
 	v_gen_stmts(s->body, iters);
-	--lvl;
+	--lvl;*/
 }
 
 void v_gen_stmts(N_STMTLIST * stmts, N_ITER_LIST* iters) {

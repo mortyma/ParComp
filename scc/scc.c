@@ -1,5 +1,5 @@
-#include "scc_structures.h"
 #include "graphstreamer.h"
+#include "scc.h"
 #include <assert.h>
 
 #define MAX 100
@@ -20,60 +20,73 @@ size_t cnt = 0;
 
 void scc();
 
-void scc(size_t lv, size_t ct, vector_list *components) {
-    	push(stack, ct);
-    	on_stack[ct] = true;
-    	visited[ct] = true;
-    	idx[ct] = cnt;
-    	low_link[ct] = cnt++;
+void scc(size_t lv, node *stmt, vector_list *components) {
+    	push(stack, stmt);
+    	on_stack[stmt->node_ct] = true;
+    	visited[stmt->node_ct] = true;
+    	idx[stmt->node_ct] = cnt;
+    	low_link[stmt->node_ct] = cnt++;
+	bool self_loop = false;
 	
-	node *neighbours_tmp = neighbours(ct, lv);
+	node *neighbours_tmp = neighbours(stmt->node_ct, lv);
+
 	while(neighbours_tmp != NULL) {
-		size_t neighbour = neighbours_tmp->node_ct;
-        	if(!visited[neighbour]) {
-            		scc(lv, neighbour, components);
-            		low_link[ct] = min(low_link[ct], low_link[neighbour]);
-        	} else if(on_stack[neighbour]) {
-           		low_link[ct] = min(low_link[ct], low_link[neighbour]);
+		if(neighbours_tmp->node_ct == stmt->node_ct) {
+			self_loop = true;
+		}
+        	if(!visited[neighbours_tmp->node_ct]) {
+            		scc(lv, neighbours_tmp, components);
+            		low_link[stmt->node_ct] = min(low_link[stmt->node_ct], low_link[neighbours_tmp->node_ct]);
+        	} else if(on_stack[neighbours_tmp->node_ct]) {
+           		low_link[stmt->node_ct] = min(low_link[stmt->node_ct], low_link[neighbours_tmp->node_ct]);
         	}
 		neighbours_tmp = neighbours_tmp->next;
     	}
 
-    	if(low_link[ct] == idx[ct]) {
-        	size_t tmp;
+    	if(low_link[stmt->node_ct] == idx[stmt->node_ct]) {
         	list* component = malloc(sizeof(list));
 		component->head = NULL;
 		component->tail = NULL;
 		int count = 0;
-        	do {
+        	node *tmp_stmt;
+		size_t tmp_stmt_ct;
+		do {
 			count++;
-            		tmp = top(stack);
-	            	push_back(component, tmp);
-            		on_stack[tmp] = false;
+            		tmp_stmt = top(stack);
+			tmp_stmt_ct = tmp_stmt->node_ct;
+	            	push_back_m(component, tmp_stmt);
+            		on_stack[tmp_stmt->node_ct] = false;
             		pop(stack);
-        	} while(tmp != ct);
+		} while(tmp_stmt_ct != stmt->node_ct);
         	push_back_v(components, component);
-		if(count > 1) {
-			components->tail->is_cyclic = true;	
+		if(count > 1 || self_loop) {
+			components->tail->is_cyclic = true;
 		}
 		else {
 			components->tail->is_cyclic = false;	
 		}
-    	}
+	}
 }
 
 vector_list *get_SCC(list *stmts, int lv) {
 	
-	size_t ct;
 	node *tmp = stmts->head;
+	cnt = 0;
 	stack = malloc(sizeof(list));
 	vector_list *components = (vector_list *)malloc(sizeof(vector_list));
 	components->head = NULL;
 	components->tail = NULL;
+	components->nr_nodes = 0;
+	
+	for(size_t i = 0; i < MAX+1; i++) {
+		visited[i] = false;
+		on_stack[i] = false;
+		idx[i] = 0;
+		low_link[i] = 0;
+	}
 	while(tmp != NULL) {
-		ct = tmp->node_ct;
-        	if(!visited[ct]) {
-        		scc(lv, ct, components);
+        	if(!visited[tmp->node_ct]) {
+        		scc(lv, tmp, components);
         	}
 		tmp = tmp->next;
     	}
@@ -81,19 +94,19 @@ vector_list *get_SCC(list *stmts, int lv) {
 	return components;
 }
 
+void init_scc() {
+	read_from("scc/scc.in");
+}
 /*
 int main(void) {
-	read_from("../scc.in");
+	read_from("scc.in");
 	list *stmts = malloc(sizeof(list));
 	stmts->head = NULL;
 	stmts->tail = NULL;
-	push_back(stmts, 1);
-	push_back(stmts, 2);
-	push_back(stmts, 3);
-	push_back(stmts, 4);
-	vector_list *components = get_SCC(stmts, 1);
+	push_back(stmts, 6);
+	push_back(stmts, 5);
+	vector_list *components = get_SCC(stmts, 2);
 
-	size_t nr_levels = levels();
 		vector_node *components_tmp = components->head;
     		while(components_tmp != NULL) {
 			node *component_tmp = components_tmp->list->head;
@@ -105,4 +118,5 @@ int main(void) {
 			components_tmp = components_tmp->next;
     		}
         return 0;
-}*/
+}
+*/

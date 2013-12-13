@@ -1,12 +1,10 @@
-#ifndef SCC_H
-#define SCC_H
+#ifndef _SCC_H
+#define _SCC_H
 
 #include "scc_structures.h"
 
-int get_scc(char *file);
+void init_scc();
 
-void print_scc();
+vector_list *get_SCC(list *stmts, int lv);
 
-bool is_cyclic(size_t lvl, size_t stmt_nr);
-
-#endif /* SCC_H */
+#endif /* _SCC_H */
