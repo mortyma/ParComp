@@ -135,7 +135,7 @@ void gen_expr(N_EXPR * ex, N_ITER *innermost_iter, int lvl) {
     }
 
 void gen_assign(N_ASSIGN * s, int nr, N_ITER *innermost_iter, int lvl) {
-	printf("%03d ",nr);
+	//printf("%03d ",nr);
     indent(idepth);
     if (s->var_ref != NULL) {
 		gen_var_ref(s->var_ref, innermost_iter, lvl);
@@ -151,7 +151,7 @@ void gen_assign(N_ASSIGN * s, int nr, N_ITER *innermost_iter, int lvl) {
 void gen_stmts(N_STMTLIST * stmts);
 
 void gen_if(N_IF * s, int nr) {
-	printf("%03d ",nr);
+	//printf("%03d ",nr);
     indent(idepth);
     printf("if (");
 	//TODO
@@ -207,9 +207,7 @@ void vectorcode(list *nrs, int lvl) {
 	vector_node *tmp;
 	for(tmp = scc->tail; tmp != NULL; tmp = tmp->prev) {
 		if(tmp->is_cyclic) {
-			//printf("%03d ",nr);
 			node *tmp_node = nrs->head;
-			N_ASSIGN *assign = tmp_node->assign;
 			N_ITER * tmp_iter = tmp_node->loop;
 			while(tmp_iter != NULL) {
 				if(tmp_iter->lvl == lvl) {
@@ -218,19 +216,23 @@ void vectorcode(list *nrs, int lvl) {
 				tmp_iter = tmp_iter->prev;
 			}
 			N_FOR *s = tmp_iter->tn_for;
+
 			indent(idepth);
-			//printf("do %s = ",s->loopvar->id);
+			printf("do %s = ",s->loopvar->id);
 			//gen_assign(assign, tmp->list->head->node_ct);
-			/*gen_expr(s->lb);
+			gen_expr(s->lb, NULL, 0);
 			printf(", ");
-			gen_expr(s->ub);
+			gen_expr(s->ub, NULL, 0);
 			if (s->step!=NULL) {
 				printf(", ");
-				gen_expr(s->step);
+				gen_expr(s->step, NULL, 0);
 				}
 			printf("\n");
-			idepth++;*/
+			idepth++;
 			vectorcode(tmp->list, lvl+1);
+			idepth--;
+			indent(idepth);
+			printf("end do\n");
 		}
 		else {
 			N_ASSIGN *assign = tmp->list->head->assign;
@@ -422,6 +424,7 @@ void gen_stmts(N_STMTLIST * stmts) {
 				//gen_assign(s->me.s_assign,s->nr);
             break;
             case _IF:       
+				assert(0);
                 gen_if(s->me.s_if,s->nr);
             break;
             case _FOR:      
