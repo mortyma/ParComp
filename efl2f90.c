@@ -160,12 +160,12 @@ void gen_if(N_IF * s, int nr) {
 	gen_stmts(s->then_part);
     if (s->else_part != NULL) {
         indent(--idepth);
-        printf("    else\n");
+		printf("else\n");
         idepth++;
 		gen_stmts(s->else_part);
         }
     indent(--idepth);
-    printf("    end if");
+	printf("end if");
     printf("\n");
     }
 
