@@ -420,8 +420,8 @@ void gen_stmts(N_STMTLIST * stmts) {
         switch(s->typ) {
             case _ASSIGN:   
 				//TODO: only called for body of if statement
-				assert(0);
-				//gen_assign(s->me.s_assign,s->nr);
+
+				gen_assign(s->me.s_assign,s->nr, NULL, 0);
             break;
             case _IF:       
 				assert(0);
