@@ -64,7 +64,7 @@ N_EXPR *copy_expr(N_EXPR *expr, N_ITER *innermost_iter, int lvl, bool upper, boo
 		while(tmp && tmp->lvl >= lvl) {
 			if(expr->me.var_ref->entry->id == tmp->tn_for->loopvar->id) {
 				expr_cp->typ = _OP;
-				expr_cp->me.op.oper = NO_OP;
+				expr_cp->me.op.oper = INDEX_OP;
 				if(upper) {
 					expr_cp->me.op.op1expr = tmp->tn_for->ub;
 				} else {
@@ -81,6 +81,8 @@ N_EXPR *copy_expr(N_EXPR *expr, N_ITER *innermost_iter, int lvl, bool upper, boo
 			expr_cp->typ = _VAR;
 			expr_cp->me.var_ref = expr->me.var_ref;
 		}
+	} else {
+		assert(0);
 	}
 	return expr_cp;
 }
@@ -157,7 +159,9 @@ void gen_expr(N_EXPR * ex, N_ITER *innermost_iter, int lvl) {
 				gen_expr(ex->me.op.op1expr, innermost_iter, lvl);
                 printf(")");
                 }
-            else if (ex->me.op.op2expr == NULL) {
+			else if(ex->me.op.oper == INDEX_OP) {
+				gen_expr(ex->me.op.op1expr, innermost_iter, lvl);
+			}else if (ex->me.op.op2expr == NULL) {
                 gen_oper(ex->me.op.oper);
 				gen_expr(ex->me.op.op1expr, innermost_iter, lvl);
                 }
