@@ -157,12 +157,12 @@ void gen_if(N_IF * s, int nr) {
 	gen_expr(s->expr, NULL, 0);
     printf(") then\n");
     idepth++;
-    gen_stmts(s->then_part);
+	gen_stmts(s->then_part);
     if (s->else_part != NULL) {
         indent(--idepth);
         printf("    else\n");
         idepth++;
-        gen_stmts(s->else_part);
+		gen_stmts(s->else_part);
         }
     indent(--idepth);
     printf("    end if");
@@ -261,8 +261,7 @@ void gen_stmts(N_STMTLIST * stmts) {
 				gen_assign(s->me.s_assign,s->nr, NULL, 0);
             break;
             case _IF:       
-				assert(0);
-                gen_if(s->me.s_if,s->nr);
+				gen_if(s->me.s_if,s->nr);
             break;
             case _FOR:      
                 gen_for(s->me.s_for,s->nr);

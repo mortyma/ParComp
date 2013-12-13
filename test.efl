@@ -72,6 +72,12 @@ for i=1 to 10
   endfor
 endfor
 
+if k==0 then
+  a[1] = 1
+else
+  a[1] = 2
+endif
+
 ? norm
      
 end
