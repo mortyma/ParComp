@@ -103,27 +103,6 @@ void gen_exprlist(N_EXPRLIST * exl, N_ITER *innermost_iter, int lvl) {
     }
 }
 
-
-/*N_EXPRLIST *copy_exprlist(N_EXPRLIST *explist, N_ITER *innermost_iter, int lvl, bool upper) {
-	N_EXPRLIST *explist_cp = (N_EXPRLIST *) malloc(sizeof(N_EXPRLIST));
-	explist_cp->first = NULL;
-	explist_cp->last = NULL;
-	N_EXPR *tmp;
-	N_EXPR *cp;
-	for(tmp = explist->first; tmp!=explist->last; tmp = tmp->next) {
-		cp = copy_expr(tmp, innermost_iter, lvl, upper);
-		if(explist_cp->last)
-			explist_cp->last->next=cp;
-		if(tmp == explist->first) {
-			explist_cp->first = cp;
-		}
-		if(tmp == explist->last) {
-			explist_cp->last = cp;
-		}
-	}
-	return explist_cp;
-}*/
-
 void gen_var_ref(N_VAR * v, N_ITER *innermost_iter, int lvl) {
 	ENTRY * e;
 	e = v->entry;
@@ -191,7 +170,6 @@ void gen_expr(N_EXPR * ex, N_ITER *innermost_iter, int lvl) {
     }
 
 void gen_assign(N_ASSIGN * s, int nr, N_ITER *innermost_iter, int lvl) {
-	//printf("%03d "gen_expr(replaced, innermost_iter, lvl);,nr);
     indent(idepth);
     if (s->var_ref != NULL) {
 		gen_var_ref(s->var_ref, innermost_iter, lvl);
@@ -267,7 +245,6 @@ void vectorcode(list *nrs, int lvl) {
 
 			indent(idepth);
 			printf("do %s = ",s->loopvar->id);
-			//gen_assign(assign, tmp->list->head->node_ct);
 			gen_expr(s->lb, NULL, 0);
 			printf(", ");
 			gen_expr(s->ub, NULL, 0);
