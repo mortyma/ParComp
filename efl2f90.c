@@ -41,32 +41,49 @@ void gen_decls(ENTRY ** sym) {
         }
     }
 
-void gen_expr(N_EXPR * ex);
+void gen_expr(N_EXPR * ex, N_ITER *innermost_iter, int lvl);
 
-void gen_exprlist(N_EXPRLIST * exl) {
+void gen_exprlist(N_EXPRLIST * exl, N_ITER *innermost_iter, int lvl) {
     N_EXPR * ex;
     for (ex = exl->first; ex != NULL; ex = ex->next) {
         if (ex != exl->first) printf(",");
-        gen_expr(ex);
+			gen_expr(ex, innermost_iter, lvl);
         }
     }
 
-void gen_var_ref(N_VAR * v) {
-    ENTRY * e;
-    e = v->entry;
-    printf("%s",e->id);
-    if (e->dim_type == _SCAL) {
-        if (v->index != NULL) 
-            printf("{no index expression allowed}\n");
-        }
-    if (e->dim_type == _ARR) {
-        if (v->index == NULL) 
-            printf("{index expression missing}\n");
-        printf("(");
-        gen_exprlist(v->index);
-        printf(")");
-        }
-    }
+void gen_var_ref(N_VAR * v, N_ITER *innermost_iter, int lvl) {
+	ENTRY * e;
+	e = v->entry;
+
+	N_ITER *tmp = innermost_iter;
+	bool done = false;
+	while(tmp && tmp->lvl >= lvl) {
+		if(e->id == tmp->tn_for->loopvar->id) {
+			gen_expr(tmp->tn_for->lb, tmp, lvl);
+			printf(":");
+			gen_expr(tmp->tn_for->ub, tmp, lvl);
+			done = true;
+			break;
+		}
+		tmp = tmp->prev;
+	}
+
+	if(!done) {
+		printf("%s",e->id);
+	}
+
+	if (e->dim_type == _SCAL) {
+		if (v->index != NULL)
+			printf("{no index expression allowed}\n");
+		}
+	if (e->dim_type == _ARR) {
+		if (v->index == NULL)
+			printf("{index expression missing}\n");
+		printf("(");
+		gen_exprlist(v->index, innermost_iter, lvl);
+		printf(")");
+		}
+	}
 
 void gen_oper(int o) {
   switch(o) {
@@ -87,7 +104,7 @@ void gen_oper(int o) {
   }
 }
 
-void gen_expr(N_EXPR * ex) {
+void gen_expr(N_EXPR * ex, N_ITER *innermost_iter, int lvl) {
     switch(ex->typ) {
         case _FLOATNUM:
             printf("%f",ex->me.float_number);
@@ -96,38 +113,38 @@ void gen_expr(N_EXPR * ex) {
             printf("%d",ex->me.int_number);
         break;
         case _VAR: 
-            gen_var_ref(ex->me.var_ref);
+			gen_var_ref(ex->me.var_ref, innermost_iter, lvl);
 		
         break;
         case _OP:
             if (ex->me.op.oper == NO_OP) {
                 printf("(");
-                gen_expr(ex->me.op.op1expr);
+				gen_expr(ex->me.op.op1expr, innermost_iter, lvl);
                 printf(")");
                 }
             else if (ex->me.op.op2expr == NULL) {
                 gen_oper(ex->me.op.oper);
-                gen_expr(ex->me.op.op1expr);
+				gen_expr(ex->me.op.op1expr, innermost_iter, lvl);
                 }
             else {
-                gen_expr(ex->me.op.op1expr);
+				gen_expr(ex->me.op.op1expr, innermost_iter, lvl);
                 gen_oper(ex->me.op.oper);
-                gen_expr(ex->me.op.op2expr);
+				gen_expr(ex->me.op.op2expr, innermost_iter, lvl);
                 }
         }
     }
 
-void gen_assign(N_ASSIGN * s, int nr) {
+void gen_assign(N_ASSIGN * s, int nr, N_ITER *innermost_iter, int lvl) {
 	printf("%03d ",nr);
     indent(idepth);
     if (s->var_ref != NULL) {
-    	gen_var_ref(s->var_ref);
+		gen_var_ref(s->var_ref, innermost_iter, lvl);
     	printf(" = ");
 		}
 	else {
     	printf("write(*,*) ");
 		}
-    gen_expr(s->expr);
+	gen_expr(s->expr, innermost_iter, lvl);
     printf("\n");
     }
 
@@ -137,7 +154,9 @@ void gen_if(N_IF * s, int nr) {
 	printf("%03d ",nr);
     indent(idepth);
     printf("if (");
-    gen_expr(s->expr);
+	//TODO
+	assert(0);
+	//gen_expr(s->expr);
     printf(") then\n");
     idepth++;
     gen_stmts(s->then_part);
@@ -215,7 +234,8 @@ void vectorcode(list *nrs, int lvl) {
 		}
 		else {
 			N_ASSIGN *assign = tmp->list->head->assign;
-			gen_assign(assign, tmp->list->head->node_ct);
+			N_ITER *innermost_iter = tmp->list->head->loop;
+			gen_assign(assign, tmp->list->head->node_ct, innermost_iter, lvl);
 		}
 	}
 }
@@ -397,7 +417,9 @@ void gen_stmts(N_STMTLIST * stmts) {
     for (s = stmts->first; s != NULL; s = s->next) {
         switch(s->typ) {
             case _ASSIGN:   
-                gen_assign(s->me.s_assign,s->nr);
+				//TODO: only called for body of if statement
+				assert(0);
+				//gen_assign(s->me.s_assign,s->nr);
             break;
             case _IF:       
                 gen_if(s->me.s_if,s->nr);
