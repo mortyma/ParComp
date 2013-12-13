@@ -79,13 +79,17 @@ for i=1 to 10
   endfor
 endfor
 
+for i=1 to 10
+  for j=1 to 10
+    u[i+1,1] = u[i, 1];
+  endfor
+endfor
+
 if k==0 then
   a[1] = 1
 else
   a[1] = 2
 endif
-
-
 
 ? norm
      
