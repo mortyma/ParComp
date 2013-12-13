@@ -2,7 +2,6 @@ program jacobi
 
 float u[1:100,1:100]
 float f[1:100,1:100]
-float a[1:100]
 float uhelp[1:100,1:100]
 
 float omega
@@ -11,6 +10,7 @@ float norm
 
 int i
 int j
+int iter
 int k
 
 k=1
@@ -24,10 +24,6 @@ else
 	omega = 0.5
 endif
 endif
-
-for i=1 to 100
-	a[i] = 0
-endfor
 
 for iter = 1 to 100
 
@@ -49,6 +45,9 @@ for iter = 1 to 100
       		u[i,j] = uhelp[i,j] 
    		endfor
 	endfor
+
+endfor
+
 ? norm
      
 end
