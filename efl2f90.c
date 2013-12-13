@@ -41,7 +41,7 @@ void gen_decls(ENTRY ** sym) {
         }
     }
 
-N_EXPR *copy_expr(N_EXPR *expr, N_ITER *innermost_iter, int lvl, bool upper) {
+N_EXPR *copy_expr(N_EXPR *expr, N_ITER *innermost_iter, int lvl, bool upper, bool *changed) {
 	if(expr == NULL) {
 		return NULL;
 	}
@@ -54,8 +54,8 @@ N_EXPR *copy_expr(N_EXPR *expr, N_ITER *innermost_iter, int lvl, bool upper) {
 		expr_cp->me.int_number = expr->me.int_number;
 	} else if(expr->typ == _OP) {
 		expr_cp->me.op.oper = expr->me.op.oper;
-		N_EXPR *op1expr_cp = copy_expr(expr->me.op.op1expr, innermost_iter, lvl, upper);
-		N_EXPR *op2expr_cp = copy_expr(expr->me.op.op2expr, innermost_iter, lvl, upper);
+		N_EXPR *op1expr_cp = copy_expr(expr->me.op.op1expr, innermost_iter, lvl, upper, changed);
+		N_EXPR *op2expr_cp = copy_expr(expr->me.op.op2expr, innermost_iter, lvl, upper, changed);
 		expr_cp->me.op.op1expr = op1expr_cp;
 		expr_cp->me.op.op2expr = op2expr_cp;
 	} else if (expr->typ == _VAR) {
@@ -71,6 +71,7 @@ N_EXPR *copy_expr(N_EXPR *expr, N_ITER *innermost_iter, int lvl, bool upper) {
 					expr_cp->me.op.op1expr = tmp->tn_for->lb;
 				}
 				done = true;
+				*changed = true;
 				break;
 			}
 			tmp = tmp->prev;
@@ -90,18 +91,20 @@ void gen_exprlist(N_EXPRLIST * exl, N_ITER *innermost_iter, int lvl) {
     N_EXPR * ex;
     for (ex = exl->first; ex != NULL; ex = ex->next) {
         if (ex != exl->first) printf(",");
+		bool changed = false;
 		//gen_expr(ex, innermost_iter, lvl);
-		N_EXPR *replaced = copy_expr(ex, innermost_iter, lvl, false);
-		gen_expr(ex, innermost_iter, lvl);
-		printf(":");
-		replaced = copy_expr(ex, innermost_iter, lvl, true);
+		N_EXPR *replaced = copy_expr(ex, innermost_iter, lvl, false, &changed);
 		gen_expr(replaced, innermost_iter, lvl);
+		if(changed) {
+			printf(":");
+			replaced = copy_expr(ex, innermost_iter, lvl, true, &changed);
+			gen_expr(replaced, innermost_iter, lvl);
         }
     }
+}
 
 
-
-N_EXPRLIST *copy_exprlist(N_EXPRLIST *explist, N_ITER *innermost_iter, int lvl, bool upper) {
+/*N_EXPRLIST *copy_exprlist(N_EXPRLIST *explist, N_ITER *innermost_iter, int lvl, bool upper) {
 	N_EXPRLIST *explist_cp = (N_EXPRLIST *) malloc(sizeof(N_EXPRLIST));
 	explist_cp->first = NULL;
 	explist_cp->last = NULL;
@@ -119,7 +122,7 @@ N_EXPRLIST *copy_exprlist(N_EXPRLIST *explist, N_ITER *innermost_iter, int lvl, 
 		}
 	}
 	return explist_cp;
-}
+}*/
 
 void gen_var_ref(N_VAR * v, N_ITER *innermost_iter, int lvl) {
 	ENTRY * e;
