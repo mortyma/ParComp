@@ -41,37 +41,90 @@ void gen_decls(ENTRY ** sym) {
         }
     }
 
+N_EXPR *copy_expr(N_EXPR *expr, N_ITER *innermost_iter, int lvl, bool upper) {
+	if(expr == NULL) {
+		return NULL;
+	}
+	N_EXPR *expr_cp = (N_EXPR *) malloc(sizeof(N_EXPR));
+	expr_cp->next = NULL;
+	expr_cp->typ = expr->typ;
+	if(expr->typ == _FLOATNUM) {
+		expr_cp->me.float_number = expr->me.float_number;
+	} else if(expr->typ == _INTNUM) {
+		expr_cp->me.int_number = expr->me.int_number;
+	} else if(expr->typ == _OP) {
+		expr_cp->me.op.oper = expr->me.op.oper;
+		N_EXPR *op1expr_cp = copy_expr(expr->me.op.op1expr, innermost_iter, lvl, upper);
+		N_EXPR *op2expr_cp = copy_expr(expr->me.op.op2expr, innermost_iter, lvl, upper);
+		expr_cp->me.op.op1expr = op1expr_cp;
+		expr_cp->me.op.op2expr = op2expr_cp;
+	} else if (expr->typ == _VAR) {
+		N_ITER *tmp = innermost_iter;
+		bool done = false;
+		while(tmp && tmp->lvl >= lvl) {
+			if(expr->me.var_ref->entry->id == tmp->tn_for->loopvar->id) {
+				expr_cp->typ = _OP;
+				expr_cp->me.op.oper = NO_OP;
+				if(upper) {
+					expr_cp->me.op.op1expr = tmp->tn_for->ub;
+				} else {
+					expr_cp->me.op.op1expr = tmp->tn_for->lb;
+				}
+				done = true;
+				break;
+			}
+			tmp = tmp->prev;
+		}
+		if(!done) {
+			//assign old var_ref. no need to copy
+			expr_cp->typ = _VAR;
+			expr_cp->me.var_ref = expr->me.var_ref;
+		}
+	}
+	return expr_cp;
+}
+
 void gen_expr(N_EXPR * ex, N_ITER *innermost_iter, int lvl);
 
 void gen_exprlist(N_EXPRLIST * exl, N_ITER *innermost_iter, int lvl) {
     N_EXPR * ex;
     for (ex = exl->first; ex != NULL; ex = ex->next) {
         if (ex != exl->first) printf(",");
-			gen_expr(ex, innermost_iter, lvl);
+		//gen_expr(ex, innermost_iter, lvl);
+		N_EXPR *replaced = copy_expr(ex, innermost_iter, lvl, false);
+		gen_expr(ex, innermost_iter, lvl);
+		printf(":");
+		replaced = copy_expr(ex, innermost_iter, lvl, true);
+		gen_expr(replaced, innermost_iter, lvl);
         }
     }
+
+
+
+N_EXPRLIST *copy_exprlist(N_EXPRLIST *explist, N_ITER *innermost_iter, int lvl, bool upper) {
+	N_EXPRLIST *explist_cp = (N_EXPRLIST *) malloc(sizeof(N_EXPRLIST));
+	explist_cp->first = NULL;
+	explist_cp->last = NULL;
+	N_EXPR *tmp;
+	N_EXPR *cp;
+	for(tmp = explist->first; tmp!=explist->last; tmp = tmp->next) {
+		cp = copy_expr(tmp, innermost_iter, lvl, upper);
+		if(explist_cp->last)
+			explist_cp->last->next=cp;
+		if(tmp == explist->first) {
+			explist_cp->first = cp;
+		}
+		if(tmp == explist->last) {
+			explist_cp->last = cp;
+		}
+	}
+	return explist_cp;
+}
 
 void gen_var_ref(N_VAR * v, N_ITER *innermost_iter, int lvl) {
 	ENTRY * e;
 	e = v->entry;
-
-	N_ITER *tmp = innermost_iter;
-	bool done = false;
-	while(tmp && tmp->lvl >= lvl) {
-		if(e->id == tmp->tn_for->loopvar->id) {
-			gen_expr(tmp->tn_for->lb, tmp, lvl);
-			printf(":");
-			gen_expr(tmp->tn_for->ub, tmp, lvl);
-			done = true;
-			break;
-		}
-		tmp = tmp->prev;
-	}
-
-	if(!done) {
-		printf("%s",e->id);
-	}
-
+	printf("%s",e->id);
 	if (e->dim_type == _SCAL) {
 		if (v->index != NULL)
 			printf("{no index expression allowed}\n");
@@ -135,7 +188,7 @@ void gen_expr(N_EXPR * ex, N_ITER *innermost_iter, int lvl) {
     }
 
 void gen_assign(N_ASSIGN * s, int nr, N_ITER *innermost_iter, int lvl) {
-	//printf("%03d ",nr);
+	//printf("%03d "gen_expr(replaced, innermost_iter, lvl);,nr);
     indent(idepth);
     if (s->var_ref != NULL) {
 		gen_var_ref(s->var_ref, innermost_iter, lvl);
