@@ -1,0 +1,77 @@
+program jacobi
+
+float u[1:100,1:100]
+float f[1:100,1:100]
+float a[1:100]
+float b[1:100]
+float uhelp[1:100,1:100]
+
+float omega
+float diff
+float norm
+
+int i
+int j
+int k
+
+for i=1 to 10
+  a[i] = 1
+endfor 
+
+for i=1 to 10
+  a[i] = 1
+  b[i] = a[i]
+endfor
+
+for i=1 to 10
+  for j=1 to 10
+    u[i,j] = 1
+    f[i,j] = u[i,j]
+  endfor
+endfor
+
+for i=1 to 10
+  for j=1 to 10
+    u[i,j] = f[i,j-1]
+    f[i,j] = u[i,j]
+  endfor
+endfor
+
+for i=1 to 10
+  a[i] = a[i-1]
+endfor 
+
+for i=1 to 10
+  a[i] = 1
+  for j=1 to 10
+    u[i,j] = 1
+  endfor
+endfor
+
+for i=1 to 10
+  for j=1 to 10
+     f[i,j] = f[i,j-1]
+  endfor
+endfor 
+
+for i=1 to 10
+  for j=1 to 10
+    f[i,j] = 1
+  endfor
+  for k=1 to 10
+    u[i,k] = 1
+  endfor
+endfor
+
+for i=1 to 10
+  for j=1 to 10
+    f[i,j] = f[i,j-1]
+  endfor
+  for k=1 to 10
+    u[i,k] = 2
+  endfor
+endfor
+
+? norm
+     
+end
