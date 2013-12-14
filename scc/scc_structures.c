@@ -2,7 +2,7 @@
 #include <assert.h>
 #include "scc_structures.h"
 
-list ***m_nodes;
+list_lists ***m_nodes;
 
 node* top(list *stack) {
 	if(stack->head == NULL) {
@@ -113,20 +113,22 @@ void push_back_m(list *vector, node *vector_node) {
 	}
 }
 
-void push_back_k(list *vector, node *vector_node) {
+void push_back_k(list_lists *vector, node *vector_node) {
 	if(vector->head == NULL) {
-		vector->head = vector_node;
+		vector->head = malloc(sizeof(list_node));
+		vector->head->node = vector_node;
 		vector->tail = vector->head;
 		vector->head->next = NULL;
 	}
 	else {
-		vector->tail->next = vector_node;
+		vector->tail->next = malloc(sizeof(list_node));
+		vector->tail->next->node = vector_node;
 		vector->tail = vector->tail->next;
 		vector->tail->next = NULL;
 
 	}
 }
-list** nodes(size_t level) {
+list_lists** nodes(size_t level) {
 	return m_nodes[level];
 }
 
@@ -163,7 +165,7 @@ void update_nodes(list* stmts) {
 	}
 }
 
-node* neighbours(size_t ct, size_t level) {
+list_node* neighbours(size_t ct, size_t level) {
     	if(level > m_nr_levels) {
 		return NULL; 
 	}
