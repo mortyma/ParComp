@@ -225,6 +225,7 @@ void get_stmts(N_FOR *for_s, N_ITER* it, list *nrs) {
 				nest_it->prev = it;
 				nest_it->lvl = ++lvl;
 				get_stmts(s->me.s_for, nest_it, nrs);
+                --lvl;
 				}
 			break;
 			}
