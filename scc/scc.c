@@ -97,26 +97,3 @@ vector_list *get_SCC(list *stmts, int lv) {
 void init_scc(char *file) {
     read_from(file);
 }
-/*
-int main(void) {
-	read_from("scc.in");
-	list *stmts = malloc(sizeof(list));
-	stmts->head = NULL;
-	stmts->tail = NULL;
-	push_back(stmts, 6);
-	push_back(stmts, 5);
-	vector_list *components = get_SCC(stmts, 2);
-
-		vector_node *components_tmp = components->head;
-    		while(components_tmp != NULL) {
-			node *component_tmp = components_tmp->list->head;
-        		while(component_tmp != NULL) {
-            			printf("cyclic: %s %zu\n", btoa(components_tmp->is_cyclic), component_tmp->node_ct+1);
-				component_tmp = component_tmp->next;
-        		}
-        		printf("\n");
-			components_tmp = components_tmp->next;
-    		}
-        return 0;
-}
-*/
