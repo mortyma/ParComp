@@ -416,6 +416,16 @@ void count_stmts(N_STMTLIST * stmts) {
         
 int main(int argc, char **argv) {
 
+    char *file = NULL;
+    if (argc < 2) {
+        fprintf(stderr, "File with dependency graph information required.\n");
+        return -1;
+      
+    }
+    int size = strlen(argv[1]);
+    file = (char *)malloc(sizeof(char) * size);
+    strcpy(file, argv[1]);
+
     prog = new(N_PROG);
     prog->symbols = (ENTRY **) malloc(2*sizeof(ENTRY));
 	stmt_count = 0;
@@ -428,14 +438,19 @@ int main(int argc, char **argv) {
         printf("\n");
         printf("program %s\n",prog->name);
         printf("\n");
-        init_scc();
+        init_scc(file);
         gen_decls(prog->symbols);
         printf("\n");
         gen_stmts(prog->stmts);
         printf("\n");
         printf("end program %s\n",prog->name);
         }
+
+    if(file) {
+        free(file);
     }
+    return 0;
+}
 
 yyerror(char *s) {
     printf("%s in line %d: %s\n", s, yylineno, yytext);

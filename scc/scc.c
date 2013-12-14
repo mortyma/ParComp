@@ -94,8 +94,8 @@ vector_list *get_SCC(list *stmts, int lv) {
 	return components;
 }
 
-void init_scc() {
-	read_from("scc/scc.in");
+void init_scc(char *file) {
+    read_from(file);
 }
 /*
 int main(void) {

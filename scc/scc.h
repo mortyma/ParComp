@@ -3,7 +3,7 @@
 
 #include "scc_structures.h"
 
-void init_scc();
+void init_scc(char *file);
 
 vector_list *get_SCC(list *stmts, int lv);
 

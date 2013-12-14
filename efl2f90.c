@@ -8,7 +8,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include "scc/scc.h"
-#include "efl_ir.h"
 
 #define MAX 100
 int idepth  = 0;
