@@ -13,3 +13,4 @@ clean:
 	rm -f jacobi.f90
 	rm -f test.f90
 	rm -f *~
+	rm -f CMakeLists.txt.user
