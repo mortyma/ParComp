@@ -29,9 +29,7 @@ void scc(size_t lv, node *stmt, vector_list *components, list *stmts) {
 	bool self_loop = false;
 	int not_found = 1;
 	list_node *neighbours_tmp = neighbours(stmt->node_ct, lv);
-
 	while(neighbours_tmp != NULL) {
-		
 		node *tmp = stmts->head;
 		while(tmp != NULL) {
 			if(tmp->node_ct == neighbours_tmp->node->node_ct) {

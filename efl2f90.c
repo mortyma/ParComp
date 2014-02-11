@@ -87,6 +87,7 @@ N_EXPR *copy_expr(N_EXPR *expr, N_ITER *innermost_iter, int lvl, bool upper, boo
 }
 
 void gen_expr(N_EXPR * ex, N_ITER *innermost_iter, int lvl);
+void gen_par_expr(N_EXPR * ex);
 
 void gen_exprlist(N_EXPRLIST * exl, N_ITER *innermost_iter, int lvl) {
     N_EXPR * ex;
@@ -111,15 +112,15 @@ void gen_var_ref(N_VAR * v, N_ITER *innermost_iter, int lvl) {
 	if (e->dim_type == _SCAL) {
 		if (v->index != NULL)
 			printf("{no index expression allowed}\n");
-		}
+	}
 	if (e->dim_type == _ARR) {
 		if (v->index == NULL)
 			printf("{index expression missing}\n");
 		printf("(");
 		gen_exprlist(v->index, innermost_iter, lvl);
 		printf(")");
-		}
 	}
+}
 
 void gen_oper(int o) {
   switch(o) {
@@ -140,37 +141,93 @@ void gen_oper(int o) {
   }
 }
 
+void gen_par_exprlist(N_EXPRLIST * exl) {
+    N_EXPR * ex;
+    for (ex = exl->first; ex != NULL; ex = ex->next) {
+        if (ex != exl->first) printf(",");
+        	gen_par_expr(ex);
+    }
+}
+
 void gen_expr(N_EXPR * ex, N_ITER *innermost_iter, int lvl) {
     switch(ex->typ) {
         case _FLOATNUM:
-            printf("%f",ex->me.float_number);
+            	printf("%f",ex->me.float_number);
         break;
         case _INTNUM:
-            printf("%d",ex->me.int_number);
+            	printf("%d",ex->me.int_number);
         break;
         case _VAR: 
-			gen_var_ref(ex->me.var_ref, innermost_iter, lvl);
+		gen_var_ref(ex->me.var_ref, innermost_iter, lvl);
 		
         break;
         case _OP:
-            if (ex->me.op.oper == NO_OP) {
-                printf("(");
-				gen_expr(ex->me.op.op1expr, innermost_iter, lvl);
-                printf(")");
+        	if (ex->me.op.oper == NO_OP) {
+                	printf("(");
+			gen_expr(ex->me.op.op1expr, innermost_iter, lvl);
+                	printf(")");
                 }
-			else if(ex->me.op.oper == INDEX_OP) {
-				gen_expr(ex->me.op.op1expr, innermost_iter, lvl);
-			}else if (ex->me.op.op2expr == NULL) {
-                gen_oper(ex->me.op.oper);
-				gen_expr(ex->me.op.op1expr, innermost_iter, lvl);
+		else if(ex->me.op.oper == INDEX_OP) {
+			gen_expr(ex->me.op.op1expr, innermost_iter, lvl);
+		}else if (ex->me.op.op2expr == NULL) {
+        	       	gen_oper(ex->me.op.oper);
+			gen_expr(ex->me.op.op1expr, innermost_iter, lvl);
+               	}
+           	else {
+			gen_expr(ex->me.op.op1expr, innermost_iter, lvl);
+             		gen_oper(ex->me.op.oper);
+			gen_expr(ex->me.op.op2expr, innermost_iter, lvl);
                 }
-            else {
-				gen_expr(ex->me.op.op1expr, innermost_iter, lvl);
-                gen_oper(ex->me.op.oper);
-				gen_expr(ex->me.op.op2expr, innermost_iter, lvl);
-                }
+    	}
+}
+
+void gen_par_var_ref(N_VAR * v) {
+    	ENTRY * e;
+    	e = v->entry;
+    	printf("%s",e->id);
+    	if (e->dim_type == _SCAL) {
+        	if (v->index != NULL) 
+            		printf("{no index expression allowed}\n");
         }
-    }
+    	if (e->dim_type == _ARR) {
+        	if (v->index == NULL) 
+            		printf("{index expression missing}\n");
+        	printf("(");
+        	gen_par_exprlist(v->index);
+        	printf(")");
+	}
+}
+
+void gen_par_expr(N_EXPR * ex) {
+    	switch(ex->typ) {
+        	case _FLOATNUM:
+            		printf("%f",ex->me.float_number);
+        	break;
+        	case _INTNUM:
+            		printf("%d",ex->me.int_number);
+        	break;
+        	case _VAR:
+            		gen_par_var_ref(ex->me.var_ref);
+        	break;
+        	case _OP:
+            	if (ex->me.op.oper == NO_OP) {
+                	printf("(");
+                	gen_par_expr(ex->me.op.op1expr);
+                	printf(")");
+                }
+            	else if (ex->me.op.op2expr == NULL) {
+                	gen_oper(ex->me.op.oper);
+                	gen_par_expr(ex->me.op.op1expr);
+                }
+            	else {
+                	gen_par_expr(ex->me.op.op1expr);
+           	     	gen_oper(ex->me.op.oper);
+                	gen_par_expr(ex->me.op.op2expr);
+            	}
+	}
+}
+
+
 
 void gen_assign(N_ASSIGN * s, int nr, N_ITER *innermost_iter, int lvl) {
     indent(idepth);
@@ -184,6 +241,21 @@ void gen_assign(N_ASSIGN * s, int nr, N_ITER *innermost_iter, int lvl) {
 	gen_expr(s->expr, innermost_iter, lvl);
     printf("\n");
     }
+
+void gen_par_assign(N_ASSIGN * s) {
+	//printf("%03d ",nr);
+    	indent(idepth);
+    	if (s->var_ref != NULL) {
+    		gen_par_var_ref(s->var_ref);
+    		printf(" = ");
+	}
+	else {
+    		printf("write(*,*) ");
+	}
+    	gen_par_expr(s->expr);
+    	printf("\n");
+}
+
 
 void gen_stmts(N_STMTLIST * stmts);
 
@@ -225,11 +297,92 @@ void get_stmts(N_FOR *for_s, N_ITER* it, list *nrs) {
 				nest_it->prev = it;
 				nest_it->lvl = ++lvl;
 				get_stmts(s->me.s_for, nest_it, nrs);
-                --lvl;
+        		        --lvl;
 				}
 			break;
 			}
 		}
+}
+
+void produce_serial_code(vector_node *stmt, int lvl) {
+	node *tmp_node = stmt->list->head;
+	N_ITER * tmp_iter = tmp_node->loop;
+	if(tmp_iter->lvl == lvl-1) {
+		N_ASSIGN *assign = stmt->list->head->assign;
+		//N_ITER *innermost_iter = tmp->list->head->loop;
+		gen_par_assign(assign);
+		return;
+	}
+	while(tmp_iter != NULL) {
+		if(tmp_iter->lvl == lvl) {
+			break;
+		}
+		tmp_iter = tmp_iter->prev;
+	}
+	N_FOR *s = tmp_iter->tn_for;
+
+	indent(idepth);
+	printf("do %s = ",s->loopvar->id);
+	gen_expr(s->lb, NULL, 0);
+	printf(", ");
+	gen_expr(s->ub, NULL, 0);
+	if (s->step!=NULL) {
+		printf(", ");
+		gen_expr(s->step, NULL, 0);
+	}
+	printf("\n");
+	idepth++;
+	produce_serial_code(stmt, lvl+1);
+	idepth--;
+	indent(idepth);
+	printf("end do\n");
+}
+
+void parallelcode(list *nrs, int lvl) {
+	vector_list * scc = get_SCC(nrs, lvl);
+        vector_node *tmp;
+        for(tmp = scc->tail; tmp != NULL; tmp = tmp->prev) {
+		node *tmp_node = tmp->list->head;
+		N_ITER * tmp_iter = tmp_node->loop;
+		if(!tmp->is_cyclic && tmp_iter->lvl < lvl) {
+			produce_serial_code(tmp, lvl);
+		}
+		else if(tmp->is_cyclic) {
+			node *tmp_node = nrs->head;
+			N_ITER * tmp_iter = tmp_node->loop;
+			while(tmp_iter != NULL) {
+				if(tmp_iter->lvl == lvl) {
+					break;
+				}
+				tmp_iter = tmp_iter->prev;
+			}
+			N_FOR *s = tmp_iter->tn_for;
+
+			indent(idepth);
+			printf("do %s = ",s->loopvar->id);
+			gen_expr(s->lb, NULL, 0);
+			printf(", ");
+			gen_expr(s->ub, NULL, 0);
+			if (s->step!=NULL) {
+				printf(", ");
+				gen_expr(s->step, NULL, 0);
+				}
+			printf("\n");
+			idepth++;
+			parallelcode(tmp->list, lvl+1);
+			idepth--;
+			indent(idepth);
+			printf("end do\n");
+		}
+		else {
+			//N_ASSIGN *assign = tmp->list->head->assign;
+			//N_ITER *innermost_iter = tmp->list->head->loop;
+			//gen_par_assign(assign);
+			printf("!$ OMP DO\n");
+			produce_serial_code(tmp, lvl);
+			printf("!$ OMP END DO\n");
+		}
+	}
 }
 
 void vectorcode(list *nrs, int lvl) {
@@ -284,7 +437,8 @@ void gen_for(N_FOR * s, int nr) {
 
 	get_stmts(s, it, nrs);
 	update_nodes(nrs);
-	vectorcode(nrs, 1);
+	//vectorcode(nrs, 1);
+	parallelcode(nrs, 1);
 
 	free(nrs);
 	free(it);

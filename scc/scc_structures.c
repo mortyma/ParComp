@@ -149,9 +149,9 @@ void add_arc(size_t from, size_t to, size_t level) {
 		stmt_array[to]->assign = NULL;
 		stmt_array[to]->next = NULL;
 	}
-	for(size_t i = 1; i <= level; i++) {
-    		push_back_k(m_nodes[i][from], stmt_array[to]);
-	}
+	//for(size_t i = 1; i <= level; i++) {
+    		push_back_k(m_nodes[level][from], stmt_array[to]);
+	//}
 }
 
 void update_nodes(list* stmts) {
