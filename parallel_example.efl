@@ -1,0 +1,33 @@
+program parallel_example
+
+float a[1:100,1:100]
+float b[1:100,1:100]
+float d[1:100,1:100]
+float c[1:100,1:100,1:100]
+
+int i
+int j
+int k
+
+for i = 1 to 100
+	for j = 1 to 100
+		a[i,j] = a[i,j-1]
+		b[i,j] = a[i,j-2] + 2
+	endfor
+endfor
+
+for i = 1 to 100
+	for j = 1 to 100
+		for k = 1 to 100
+			c[i,j,k] = a[i,j]*(c[i-1,j,k] + c[i,j-2,k] + c[i,j,k-3])/3
+		endfor
+	endfor
+endfor
+
+for i = 1 to 100
+	for j = 1 to 100
+		d[i,j] = d[i-3,j] + a[i,j]*2
+	endfor
+endfor
+     
+end
