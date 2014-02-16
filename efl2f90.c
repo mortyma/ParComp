@@ -378,9 +378,9 @@ void parallelcode(list *nrs, int lvl) {
 			//N_ASSIGN *assign = tmp->list->head->assign;
 			//N_ITER *innermost_iter = tmp->list->head->loop;
 			//gen_par_assign(assign);
-			printf("!$ OMP DO\n");
+			printf("!$OMP DO\n");
 			produce_serial_code(tmp, lvl);
-			printf("!$ OMP END DO\n");
+			printf("!$OMP END DO\n");
 		}
 	}
 }
