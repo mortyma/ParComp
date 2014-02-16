@@ -83,10 +83,12 @@ void push_back_t(list *vector, size_t ct, N_ITER* loop, N_ASSIGN *assign) {
 		vector->head->assign = assign;
 		vector->tail = vector->head;
 		vector->head->next = NULL;
+		vector->head->prev = NULL;
 	}
 	else {
 		vector->tail->next = malloc(sizeof(node));
 		vector->tail->next->node_ct = ct;
+		vector->tail->next->prev = vector->tail;
 		vector->tail->next->loop = loop;
 		vector->tail->next->assign = assign;
 		vector->tail = vector->tail->next;

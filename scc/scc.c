@@ -86,7 +86,7 @@ void scc(size_t lv, node *stmt, vector_list *components, list *stmts) {
 
 vector_list *get_SCC(list *stmts, int lv) {
 	
-	node *tmp = stmts->head;
+	node *tmp = stmts->tail;
 	cnt = 0;
 	stack = malloc(sizeof(list));
 	vector_list *components = (vector_list *)malloc(sizeof(vector_list));
@@ -104,7 +104,7 @@ vector_list *get_SCC(list *stmts, int lv) {
         	if(!visited[tmp->node_ct]) {
         		scc(lv, tmp, components, stmts);
         	}
-		tmp = tmp->next;
+		tmp = tmp->prev;
     	}
 	free(stack);
 	return components;

@@ -10,6 +10,7 @@ struct _linked_node {
 	N_ITER *loop;
 	N_ASSIGN *assign;
 	struct _linked_node *next;
+	struct _linked_node *prev;
 };
 
 struct _linked_list {
