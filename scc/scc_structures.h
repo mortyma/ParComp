@@ -37,6 +37,7 @@ struct _linked_list_vector_node {
 
 struct _linked_list_vector {
 	int nr_nodes;
+	bool has_cycles;
 	struct _linked_list_vector_node *head;
 	struct _linked_list_vector_node *tail;
 };

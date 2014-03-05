@@ -13,20 +13,7 @@ int j
 int iter
 int k
 
-k=1
-
-if k>0 then
-   omega = 0.9
-else
-if k==0 then
-	omega = 0.75
-else
-	omega = 0.5
-endif
-endif
-
 for iter = 1 to 100
-
 	for i=2 to 100-1 
    		for j=2 to 100-1 
       		uhelp[i,j] = (1.0-omega)*u[i,j]+omega*0.25*(f[i,j]+u[i-1,j]+u[i+1,j]+u[i,j+1]+u[i,j-1]) 

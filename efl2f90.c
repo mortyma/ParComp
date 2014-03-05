@@ -341,13 +341,20 @@ void produce_serial_code(vector_node *stmt, int lvl) {
 void parallelcode(list *nrs, int lvl) {
 	vector_list * scc = get_SCC(nrs, lvl);
         vector_node *tmp;
-        for(tmp = scc->tail; tmp != NULL; tmp = tmp->prev) {
+	if(scc->has_cycles == true) {
+		tmp = scc->tail; 
+	}
+	else {
+		tmp = scc->head;
+	}
+        while(tmp != NULL) {
 		node *tmp_node = tmp->list->head;
 		N_ITER * tmp_iter = tmp_node->loop;
 		if(!tmp->is_cyclic && tmp_iter->lvl < lvl) {
 			produce_serial_code(tmp, lvl);
 		}
 		else if(tmp->is_cyclic) {
+			//printf("%d\n", tmp->list->head->next->node_ct+1);
 			node *tmp_node = nrs->head;
 			N_ITER * tmp_iter = tmp_node->loop;
 			while(tmp_iter != NULL) {
@@ -381,6 +388,12 @@ void parallelcode(list *nrs, int lvl) {
 			printf("!$OMP DO\n");
 			produce_serial_code(tmp, lvl);
 			printf("!$OMP END DO\n");
+		}
+		if(scc->has_cycles == true) {
+			tmp = tmp->prev; 
+		}
+		else {
+			tmp = tmp->next;
 		}
 	}
 }

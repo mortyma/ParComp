@@ -77,6 +77,7 @@ void scc(size_t lv, node *stmt, vector_list *components, list *stmts) {
         	push_back_v(components, component);
 		if(count > 1 || self_loop) {
 			components->tail->is_cyclic = true;
+			components->has_cycles = true;
 		}
 		else {
 			components->tail->is_cyclic = false;	
@@ -86,13 +87,14 @@ void scc(size_t lv, node *stmt, vector_list *components, list *stmts) {
 
 vector_list *get_SCC(list *stmts, int lv) {
 	
-	node *tmp = stmts->tail;
+	node *tmp = stmts->head;
 	cnt = 0;
 	stack = malloc(sizeof(list));
 	vector_list *components = (vector_list *)malloc(sizeof(vector_list));
 	components->head = NULL;
 	components->tail = NULL;
 	components->nr_nodes = 0;
+	components->has_cycles = false;
 	
 	for(size_t i = 0; i < MAX+1; i++) {
 		visited[i] = false;
@@ -104,7 +106,8 @@ vector_list *get_SCC(list *stmts, int lv) {
         	if(!visited[tmp->node_ct]) {
         		scc(lv, tmp, components, stmts);
         	}
-		tmp = tmp->prev;
+		//tmp = tmp->prev;
+		tmp = tmp->next;
     	}
 	free(stack);
 	return components;
