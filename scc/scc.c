@@ -42,9 +42,7 @@ void scc(size_t lv, node *stmt, vector_list *components, list *stmts) {
 			neighbours_tmp = neighbours_tmp->next;
 			continue;
 		}
-		//printf("%zu %zu\n", stmt->node_ct+1, neighbours_tmp->node_ct+1);
 		if(neighbours_tmp->node->node_ct == stmt->node_ct) {
-		//printf("self_loop %zu\n", neighbours_tmp->node->node_ct+1);
 			self_loop = true;
 		}
         	if(!visited[neighbours_tmp->node->node_ct]) {
@@ -57,7 +55,6 @@ void scc(size_t lv, node *stmt, vector_list *components, list *stmts) {
     	}
 
     	if(low_link[stmt->node_ct] == idx[stmt->node_ct]) {
-		//printf("in %zu\n", stmt->node_ct+1);
         	list* component = malloc(sizeof(list));
 		component->head = NULL;
 		component->tail = NULL;
@@ -69,11 +66,9 @@ void scc(size_t lv, node *stmt, vector_list *components, list *stmts) {
             		tmp_stmt = top(stack);
 			tmp_stmt_ct = tmp_stmt->node_ct;
 	            	push_back_m(component, tmp_stmt);
-			//printf("%zu\n", tmp_stmt->node_ct+1);
             		on_stack[tmp_stmt->node_ct] = false;
             		pop(stack);
 		} while(tmp_stmt_ct != stmt->node_ct);
-		//printf("component\n");
         	push_back_v(components, component);
 		if(count > 1 || self_loop) {
 			components->tail->is_cyclic = true;

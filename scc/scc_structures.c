@@ -107,13 +107,20 @@ void push_back_m(list *vector, node *vector_node) {
 		vector->head->prev = NULL;
 	}
 	else {
-		vector->tail->next = malloc(sizeof(node));
+		/*vector->tail->next = malloc(sizeof(node));
 		vector->tail->next->node_ct = vector_node->node_ct;
 		vector->tail->next->prev = vector->tail;
 		vector->tail->next->loop = vector_node->loop;
 		vector->tail->next->assign = vector_node->assign;
 		vector->tail = vector->tail->next;
-		vector->tail->next = NULL;
+		vector->tail->next = NULL;*/
+		vector->head->prev = malloc(sizeof(node));
+		vector->head->prev->node_ct = vector_node->node_ct;
+		vector->head->prev->next = vector->head;
+		vector->head = vector->head->prev;
+		vector->head->loop = vector_node->loop;
+		vector->head->assign = vector_node->assign;
+		vector->head->prev = NULL;
 	}
 }
 
